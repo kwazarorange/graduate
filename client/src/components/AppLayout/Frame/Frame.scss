@@ -1,0 +1,10 @@
+.frame {
+  height: 100%;
+  width: 100%;
+  padding: 0%;
+  iframe {
+    height: inherit;
+    width: inherit;
+    border: 1px solid gray;
+  }
+}

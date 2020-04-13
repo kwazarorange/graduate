@@ -1,0 +1,10 @@
+.textAreaGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  width: 100%;
+  border: 1px solid black;
+
+  .textArea {
+    height: 33vh;
+  }
+}
