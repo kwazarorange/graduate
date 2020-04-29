@@ -1,12 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
-//      editorState: {ops: [{ insert: "<h1>Heading</h1>\n<p>Hello world<p/>\n" }]},
+const Delta = require("quill-delta");
+
 const workSlice = createSlice({
   name: "work",
   initialState: {
     html: {
-      editorState: "<p>&lt;h1&gt;Heading&lt;/h1&gt;</p><p>&lt;p&gt;Hello world&lt;p/&gt;</p>",
-      renderState: "<h1>Heading</h1> <p>Hello world<p/>"
+      editorState: "",
+      renderState: ""
     },
+
     css: "h1 { background-color: gray; }",
     js: ""
   },
@@ -15,9 +17,19 @@ const workSlice = createSlice({
       const { type, text } = action.payload;
       state.type = text;
     },
+    updateWithDelta: (state, action) => {
+      const {delta} = action.payload;
+      const newState = state.html.editorState.compose(delta);
+      return { ...state, html: { ...state.html, editorState: newState } };
+    },
     updateHtml: (state, action) => {
-      const { editor, render } = action.payload;
-      state.html = { editorState: editor, renderState: render };
+      const { editor } = action.payload;
+      return { ...state, html: { ...state.html, editorState: editor } };
+    },
+    updateRender: (state, action) => {
+      const { render } = action.payload;
+      // return { ...state, html: { ...state.html, renderState: render } };
+      state.render = render;
     },
     updateCss: (state, action) => {
       const text = action.payload;
@@ -32,5 +44,5 @@ const workSlice = createSlice({
 
 const { actions, reducer } = workSlice;
 
-export const { updateHtml, updateCss, updateJs } = actions;
+export const { updateHtml, updateWithDelta, updateCss, updateJs, updateRender } = actions;
 export default reducer;

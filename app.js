@@ -4,9 +4,11 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
+
 const port = process.env.PORT || 8080;
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
+const connectShareDBtoServer = require("./sharedb");
 
 const app = express();
 
@@ -23,6 +25,8 @@ if (process.env.NODE_ENV === 'production') {
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-app.listen(port, () => console.log(`Listening on port ${port}`));
+var server = app.listen(port);
+console.log(`Listening on port ${port}`)
+connectShareDBtoServer(server);
 
 module.exports = app;
