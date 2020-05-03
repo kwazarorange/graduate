@@ -3,42 +3,71 @@ import ShareDB from "sharedb/lib/client";
 import richText from "rich-text";
 import { updateHtml, updateWithDelta } from "../../../workSlice";
 import store from "../../../../store.js";
+
 ShareDB.types.register(richText.type);
 
-const socket = new ReconnectingWebSocket("ws://" + "55.55.55.5:8080");
-const connection = new ShareDB.Connection(socket);
+class Document {
+  constructor(url, collection, documentId) {
+    this.url = url;
+    this.collection = collection;
+    this.documentId = documentId;
+    this.socket = this.createSocket();
+    this.connection = new ShareDB.Connection(this.socket);
+    this.document = this.fetchDocumentInstance();
+    // this.subscribe();
 
-const doc = connection.get("examples", "richtext");
-
-const onLoad = () => {
-  store.dispatch(updateHtml({ editor: doc.data }));
-};
-const onOperation = (op, source) => {
-  if (source == "quill") {
-    return;
-  } else {
-    console.log("op received");
-    store.dispatch(updateWithDelta({ delta: op }));
+    this.observer = null;
   }
-};
-doc.subscribe(console.log("subscribed"));
-doc.on("load", onLoad);
-doc.on("op", onOperation);
+  createSocket() {
+    return new ReconnectingWebSocket("ws://" + this.url);
+  }
+  fetchDocumentInstance() {
+    return this.connection.get(this.collection, this.documentId);
+  }
+  attach(observer) {
+    if (this.observer) {
+      throw new Error("Observer already exists!");
+    } else {
+      this.observer = observer;
+    }
+  }
+  detach() {
+    this.observer = null;
+  }
+  notify(change) {
+    if (this.observer) {
+      this.observer(change);
+    }
+  }
+  submitChange(delta) {
+    console.log("Submitting delta.");
+    this.document.submitOp(delta, { source: "quill" });
+  }
+  subscribe() {
+    const onLoad = () => {
+      store.dispatch(updateHtml({ editor: this.document.data }));
+      this.notify(this.document.data);
+    };
+    const onSubscribe = () => {
+      console.log("Subscribed to document instance.");
+    };
+    const onOperation = (op, source) => {
+      if (source == "quill") {
+        return;
+      } else {
+        console.log("Operation received from: " + source + ".");
+        this.notify(op);
+      }
+    };
+    this.document.subscribe(onSubscribe);
+    this.document.on("load", onLoad);
+    this.document.on("op", onOperation);
+  }
+}
+
+const doc = new Document("55.55.55.5:8080", "examples", "richtext");
+doc.subscribe();
+// console.log(doc.document);
 
 export default doc;
-
-const onDisconnect = () => {
-  connection.close();
-};
-
-const onConnect = () => {
-  var socket = new ReconnectingWebSocket("ws://" + "55.55.55.5:8080");
-  connection.bindToSocket(socket);
-};
-
-const submitChange = delta => {
-  console.log("Submitting delta...");
-  doc.submitOp(delta, { source: "quill" });
-};
-//
-export { onDisconnect, onConnect, submitChange };
+// export { onDisconnect, onConnect, submitChange };

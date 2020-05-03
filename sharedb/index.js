@@ -15,7 +15,7 @@ const createDocument = () => {
     if (doc.type == null) {
       doc.create(
         [
-          { insert: '<h>Heading!</h>'}
+          { insert: ""}
         ],
         "rich-text"
       );

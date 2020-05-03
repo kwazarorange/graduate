@@ -1,115 +1,74 @@
-  // const testEffect = useDocument(reactQuillRef);
-  //
-  // const onChangeAction = (content, delta, source, editor) => {
-  //   console.log("Quill onChange event. Source: ", source);
-  //   const editorState = editor.getContents();
-  //   const renderState = editor.getText();
-  //   console.log(content);
-  //   // updateRender({ render: renderState }); THIS IS THE PROBLEM!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  //   // updateRender({ render: "HAHA" });
-  //   if (source == "user") {
-  //     updateText({ editor: editorState });
-  //     submitChange(delta);
-  //     return;
-  //   }
-  // };
-  // const useDocument = reactQuillRef => {
-  //   const [data, setData] = useState(null);
-  //
-  //   useEffect(() => {
-  //     async function fetchData() {
-  //       const data = await subscribeToDocument();
-  //       // I NEED TO AWAIT DISPATCH updateHTML, and then setContents... or maybe i should use suspense or something like that
-  //       setData(data);
-  //       reactQuillRef.current.getEditor().setContents(data);
-  //     }
-  //     fetchData();
-  //     return () => {
-  //       console.log("UNSUBBED!");
-  //     };
-  //   }, [reactQuillRef]);
-  //
-  //   return data;
-  // };
-  //
-  // const useChanges = doc => {
-  //   const [op, setOp] = useState(null);
-  //
-  //   useEffect(() => {
-  //     async function fetchData() {
-  //       const data = await subscribeToDocument();
-  //       // I NEED TO AWAIT DISPATCH updateHTML, and then setContents... or maybe i should use suspense or something like that
-  //       setOp(data);
-  //       doc.current.getEditor().setContents(data);
-  //     }
-  //     fetchData();
-  //     return () => {
-  //       console.log("UNSUBBED!");
-  //     };
-  //   }, [doc]);
-  //
-  //   return op;
-  // };
-  import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-  import ReactQuill, { Quill } from "react-quill";
-  import { connect } from "react-redux";
-  import axios from "axios";
-  import hljs from "./highlight.js";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import ReactQuill, { Quill } from "react-quill";
+import { connect } from "react-redux";
+import axios from "axios";
+import hljs from "./highlight.js";
 
-  import { updateHtml, updateCss, updateJs, updateRender } from "../../workSlice";
-  import "react-quill/dist/quill.bubble.css";
-  import "./TextArea.scss";
+import { updateRender, updateWithDelta } from "../../workSlice";
+import "react-quill/dist/quill.core.css";
+import "react-quill/dist/quill.bubble.css";
+import "./TextArea.scss";
+import doc from "./sharedb";
 
-  import { submitChange } from "./sharedb";
-  import "./sharedb";
+const useShareDBDocument = onChangeReceived => {
+  useEffect(() => {
+    doc.attach(onChangeReceived);
+    return () => doc.detach();
+  }, [onChangeReceived]);
+};
 
-  const TextArea = ({ textTypes, updateText, updateRender }) => {
-    const modules = {
-      //syntax: {highlight: html => hljs.highlightAuto(html).value,},
-      toolbar: false,
-      clipboard: {
-        matchVisual: false
-      }
-    };
-    const { html, css, js } = textTypes;
-    useEffect(() => {
-      reactQuillRef.current.getEditor().setContents(html);
-    }, [html]);
-    const reactQuillRef = useRef(null);
-    // const testEffect = useDocument(reactQuillRef);
-    //
-    const onChangeAction = (content, delta, source, editor) => {
-      const editorState = editor.getContents();
-      const renderState = editor.getText();
-      // updateRender({ render: renderState });
-      if (source == "user") {
-        updateText({ editor: editorState });
-        submitChange(delta);
-      }
-    };
-
-    return (
-      <div>
-        {
-          <ReactQuill
-            ref={reactQuillRef}
-            className="textArea"
-            value={html}
-            theme="bubble"
-            onChange={onChangeAction}
-            modules={modules}
-          />
-        }
-      </div>
-    );
+const TextArea = ({ textTypes, updateText, updateRender, updateW }) => {
+  const modules = {
+    syntax: {
+      highlight: text => hljs.highlightAuto(text).value
+    },
+    toolbar: false,
+    clipboard: {
+      matchVisual: false
+    },
+    history: {
+      userOnly: true
+    }
+  };
+  const quillRef = useRef(null);
+  const onChangeReceived = delta => {
+    quillRef.current.getEditor().updateContents(delta);
+  };
+  useShareDBDocument(onChangeReceived);
+  const onChange = (content, delta, source, editor) => {
+    if (source == "user") {
+      doc.submitChange(delta);
+    }
+    const renderState = editor.getText();
+    updateRender({ render: renderState });
+  };
+  const onChangeSelection = (range, source, editor) => {
+    console.log(range, source);
   };
 
-  const mapStateToProps = state => ({
-    textTypes: { html: state.html.editorState, css: state.css, js: state.js }
-  });
-  const mapDispatchToProps = {
-    updateText: updateHtml,
-    updateRender: updateRender
-  };
+  return (
+    <div>
+      <ReactQuill
+        ref={quillRef}
+        className="textArea"
+        defaultValue={{
+          ops: [
+            { attributes: {"code-block": true},
+              insert: "\n" }
+          ]
+        }}
+        theme="bubble"
+        onChange={onChange}
+        onChangeSelection={onChangeSelection}
+        modules={modules}
+      />
+    </div>
+  );
+};
 
-  export default connect(mapStateToProps, mapDispatchToProps)(TextArea);
+const mapDispatchToProps = {
+  updateRender: updateRender,
+  updateWithDelta: updateWithDelta
+};
+
+export default connect(null, mapDispatchToProps)(TextArea);

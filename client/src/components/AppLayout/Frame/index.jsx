@@ -13,7 +13,7 @@ const Frame = ({ html, css, js }) => {
 };
 
 const mapStateToProps = state => ({
-  html: state.html.renderState,
+  html: state.render,
   css: state.css,
   js: state.js
 });

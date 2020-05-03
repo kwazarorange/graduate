@@ -1,14 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
-const Delta = require("quill-delta");
+// const Delta = require("quill-delta");
 
 const workSlice = createSlice({
   name: "work",
   initialState: {
     html: {
       editorState: "",
-      renderState: ""
     },
-
+    render: "",
     css: "h1 { background-color: gray; }",
     js: ""
   },
@@ -20,7 +19,7 @@ const workSlice = createSlice({
     updateWithDelta: (state, action) => {
       const {delta} = action.payload;
       const newState = state.html.editorState.compose(delta);
-      return { ...state, html: { ...state.html, editorState: newState } };
+      state.html.editorState = newState;
     },
     updateHtml: (state, action) => {
       const { editor } = action.payload;
