@@ -3,10 +3,10 @@ import Frame from './Frame';
 import TextArea from './TextArea';
 import "./AppLayout.scss";
 
-const AppLayout = () => {
+const AppLayout = props => {
   return (
     <div className="appLayout">
-      <TextArea></TextArea>
+      <TextArea roomInfo={props.location.state}></TextArea>
       <Frame></Frame>
     </div>
   );

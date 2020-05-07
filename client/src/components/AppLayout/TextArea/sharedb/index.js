@@ -1,10 +1,13 @@
 import ReconnectingWebSocket from "reconnecting-websocket";
 import ShareDB from "sharedb/lib/client";
-import richText from "rich-text";
-import { updateHtml, updateWithDelta } from "../../../workSlice";
-import store from "../../../../store.js";
+import richText from "./rich-text";
+import { v4 as uuidv4 } from 'uuid';
 
 ShareDB.types.register(richText.type);
+
+const PRESENCE_CHANGE = "presence";
+const DOCUMENT_CHANGE = "document";
+
 
 class Document {
   constructor(url, collection, documentId) {
@@ -13,16 +16,21 @@ class Document {
     this.documentId = documentId;
     this.socket = this.createSocket();
     this.connection = new ShareDB.Connection(this.socket);
-    this.document = this.fetchDocumentInstance();
-    // this.subscribe();
-
-    this.observer = null;
   }
   createSocket() {
     return new ReconnectingWebSocket("ws://" + this.url);
   }
   fetchDocumentInstance() {
-    return this.connection.get(this.collection, this.documentId);
+    const document = this.connection.get(this.collection, this.documentId);
+    if (document.type == null) {
+      document.create([{ insert: "" }], "rich-text");
+    }
+    return document;
+  }
+  fetchPresence() {
+    const presence = this.document.connection.getDocPresence(this.collection, this.documentId);
+    const localPresence = presence.create(this.presenceId)
+    return [presence, localPresence]
   }
   attach(observer) {
     if (this.observer) {
@@ -34,21 +42,32 @@ class Document {
   detach() {
     this.observer = null;
   }
-  notify(change) {
+  notify(type, change) {
     if (this.observer) {
-      this.observer(change);
+      this.observer(type, change);
     }
   }
   submitChange(delta) {
     console.log("Submitting delta.");
     this.document.submitOp(delta, { source: "quill" });
   }
+  submitPresence(range) {
+    console.log("Submitting presence: ", range)
+    this.localPresence.submit(range, error => {
+      if (error) throw error;
+    })
+  }
   subscribe() {
+    this.document = this.fetchDocumentInstance();
+    this.presenceId = uuidv4();
+    [this.presence, this.localPresence] = this.fetchPresence();
+    this.observer = null;
+
     const onLoad = () => {
-      store.dispatch(updateHtml({ editor: this.document.data }));
-      this.notify(this.document.data);
+      this.notify(DOCUMENT_CHANGE, this.document.data);
     };
-    const onSubscribe = () => {
+    const onSubscribe = (error) => {
+      if (error) throw error;
       console.log("Subscribed to document instance.");
     };
     const onOperation = (op, source) => {
@@ -56,18 +75,27 @@ class Document {
         return;
       } else {
         console.log("Operation received from: " + source + ".");
-        this.notify(op);
+        this.notify(DOCUMENT_CHANGE, op);
       }
     };
     this.document.subscribe(onSubscribe);
     this.document.on("load", onLoad);
     this.document.on("op", onOperation);
+    this.subscribeToPresence();
+
   }
+  subscribeToPresence() {
+    const onSubscribe = (error) => {
+      if (error) throw error;
+      console.log("Subscribed to document presence.");
+    };
+    this.presence.subscribe(onSubscribe);
+    this.presence.on("receive", (id, range) => {
+      // console.log(this.presence);
+      this.notify(PRESENCE_CHANGE, {id, range})
+    })
+  };
 }
 
-const doc = new Document("55.55.55.5:8080", "examples", "richtext");
-doc.subscribe();
-// console.log(doc.document);
-
-export default doc;
-// export { onDisconnect, onConnect, submitChange };
+export default Document;
+export {PRESENCE_CHANGE, DOCUMENT_CHANGE}

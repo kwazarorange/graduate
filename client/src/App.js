@@ -1,10 +1,15 @@
 import React from 'react';
+import { Router, Link } from "@reach/router";
 import AppLayout from './components/AppLayout';
+import JoinRoomPage from "./components/JoinRoomPage";
 
 const App = () => {
   return (
     <div className="App">
-      <AppLayout />
+      <Router>
+        <JoinRoomPage path="/" />
+        <AppLayout path="/app" />
+      </Router>
     </div>
   );
 }
