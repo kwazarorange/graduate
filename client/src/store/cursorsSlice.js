@@ -4,37 +4,32 @@ import tinycolor from "tinycolor2";
 const cursorsSlice = createSlice({
   name: "cursors",
   initialState: {
-    cursors: {
-      html: [],
-      css: [],
-      js: []
-    },
-    users: []
+    cursors: [],
   },
   reducers: {
     addCursor: (state, action) => {
-      // cursor {id, name, color, range}
+      // cursor {id, collection, name, color, range}
       const {collection, cursor} = action.payload;
-      if (!state.cursors[collection].find(curs => curs.id == cursor.id)) {
-        const colorInfo = state.users.find(curs => curs.id == cursor.id);
-        if (!colorInfo) {
-          const color = tinycolor.random().toHexString();
-          state.users.push({id: cursor.id, color: color, name: cursor.name})
-          cursor.color = color;
-        } else {
-          cursor.color = colorInfo.color;
-        };
-        state.cursors[collection].push(cursor)
+      const existingCursor = state.cursors.find(curs => curs.id == cursor.id);
+      if (!existingCursor) {
+        const color = tinycolor.random().toHexString();
+        state.cursors.push({id: cursor.id, collection: collection, color: color, name: cursor.name})
+      } else {
+        existingCursor.collection = collection;
+        existingCursor.name = cursor.name;
+        existingCursor.range = cursor.range;
       };
     },
     updateCursor: (state, action) => {
       const { collection, id, range } = action.payload;
-      state.cursors[collection].find(cursor => cursor.id == id).range = range;
+      const existingCursor = state.cursors.find(curs => curs.id == id)
+
+      existingCursor.range = range;
+      existingCursor.collection = collection;
     },
     deleteCursor: (state, action) => {
-      const {collection, id} = action.payload;
-      state.cursors[collection].splice(state.cursors[collection].findIndex(cursor => cursor.id == id), 1);
-      state.users.splice(state.users.findIndex(user => user.id == id), 1);
+      const {id} = action.payload;
+      state.cursors.splice(state.cursors.findIndex(cursor => cursor.id == id), 1);
     }
   }
 });

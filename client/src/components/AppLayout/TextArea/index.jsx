@@ -12,7 +12,6 @@ import "react-quill/dist/quill.core.css";
 import "react-quill/dist/quill.bubble.css";
 import "./TextArea.scss";
 import Document, { PRESENCE_CHANGE, DOCUMENT_CHANGE } from "./sharedb";
-import tinycolor from "tinycolor2";
 
 Quill.register("modules/cursors", QuillCursors);
 
@@ -53,16 +52,17 @@ const manageCursors = (cursorState, actions, collection, cursors, data) => {
     name: data.range ? data.range.name : null,
     range: data.range
   };
+  const cursorsState = cursorState.filter(cursor => cursor.collection == collection);
   // if this is a new cursor: addCursor
-  if (!cursorState.find(curs => curs.id == cursor.id)) {
+  if (!cursorsState.find(curs => curs.id == cursor.id)) {
     const dispatchData = Object.assign({ collection }, { cursor });
     actions.addCursor(dispatchData);
     return;
   } else {
     // if range is null: deleteCursor
     if (!cursor.range) {
-      const dispatchData = Object.assign({ collection }, { id: cursor.id });
-      actions.deleteCursor(dispatchData);
+      // const dispatchData = Object.assign({ collection }, { id: cursor.id });
+      // actions.deleteCursor(dispatchData);
       cursors.removeCursor(cursor.id);
     } else {
       // if this cursor id exists in this collection: updateCursor
@@ -133,8 +133,9 @@ const TextArea = ({
   );
   useEffect(() => {
     if (cursors && cursorState) {
+      const cursorsState = cursorState.filter(cursor => cursor.collection == collection);
       cursors.clearCursors();
-      cursorState.forEach(cursor => {
+      cursorsState.forEach(cursor => {
         cursors.createCursor(cursor.id, cursor.name, cursor.color);
         cursors.moveCursor(cursor.id, cursor.range)
       })
@@ -197,8 +198,8 @@ const mapDispatchToProps =  {
   updateCursor: updateCursor,
   deleteCursor: deleteCursor
 };
-const mapStateToProps = (state, ownProps) => ({
-  cursorState: state.cursors.cursors[ownProps.collection]
+const mapStateToProps = (state) => ({
+  cursorState: state.cursors.cursors
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(TextArea);
