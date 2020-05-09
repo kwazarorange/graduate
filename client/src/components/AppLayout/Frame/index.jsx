@@ -4,7 +4,7 @@ import "./Frame.scss";
 
 const Frame = ({ html, css, js }) => {
   const document =
-    "<style>" + css + "</style>" + "<script>" + js + "</script>" + html;
+    "<style>" + css + "</style>" + html + "<script>" + js + "</script>";
   return (
     <div className="frame">
       <iframe srcDoc={document}></iframe>
@@ -13,9 +13,9 @@ const Frame = ({ html, css, js }) => {
 };
 
 const mapStateToProps = state => ({
-  html: state.render,
-  css: state.css,
-  js: state.js
+  html: state.render.render,
+  css: state.render.css,
+  js: state.render.js
 });
 
 export default connect(

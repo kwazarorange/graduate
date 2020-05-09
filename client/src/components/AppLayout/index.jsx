@@ -1,12 +1,13 @@
 import React from 'react';
 import Frame from './Frame';
 import TextArea from './TextArea';
+import TextAreaGrid from "./TextAreaGrid";
 import "./AppLayout.scss";
 
 const AppLayout = props => {
   return (
     <div className="appLayout">
-      <TextArea roomInfo={props.location.state}></TextArea>
+      <TextAreaGrid roomInfo={props.location.state} />
       <Frame></Frame>
     </div>
   );

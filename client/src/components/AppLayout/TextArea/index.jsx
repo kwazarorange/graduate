@@ -3,8 +3,11 @@ import ReactQuill, { Quill } from "react-quill";
 import QuillCursors from "quill-cursors";
 import { connect } from "react-redux";
 import hljs from "./highlight.js";
-
-import { updateRender } from "../../workSlice";
+import {
+  addCursor,
+  updateCursor,
+  deleteCursor
+} from "../../../store/cursorsSlice";
 import "react-quill/dist/quill.core.css";
 import "react-quill/dist/quill.bubble.css";
 import "./TextArea.scss";
@@ -13,9 +16,15 @@ import tinycolor from "tinycolor2";
 
 Quill.register("modules/cursors", QuillCursors);
 
-const useDocument = (id, ref) => {
+const useDocument = (cursorState, actions, documentInfo, ref) => {
   const doc = useMemo(
-    () => new Document("55.55.55.5:8080", "examples", id),
+    () =>
+      new Document(
+        "55.55.55.5:8080",
+        documentInfo.collection,
+        documentInfo.roomInfo.room,
+        documentInfo.presenceId
+      ),
     []
   );
   let [cursors, setCursors] = useState(null);
@@ -28,32 +37,61 @@ const useDocument = (id, ref) => {
       setCursors(ref.current.getEditor().getModule("cursors"));
     }
   }, [ref]);
-  useSubscription(doc, ref, cursors);
+  useSubscription(
+    cursorState,
+    actions,
+    documentInfo.collection,
+    doc,
+    ref,
+    cursors
+  );
   return [doc, cursors];
 };
-const manageCursors = (cursors, data) => {
-  const range = data.range;
+const manageCursors = (cursorState, actions, collection, cursors, data) => {
   const cursor = {
     id: data.id,
     name: data.range ? data.range.name : null,
-    color: tinycolor.random().toHexString(),
+    range: data.range
   };
-  if (range) {
-    console.log(cursor, range)
-    cursors.createCursor(cursor.id, cursor.name, cursor.color);
-    cursors.moveCursor(cursor.id, range)
+  // if this is a new cursor: addCursor
+  if (!cursorState.find(curs => curs.id == cursor.id)) {
+    const dispatchData = Object.assign({ collection }, { cursor });
+    actions.addCursor(dispatchData);
+    return;
   } else {
-    cursors.removeCursor(cursor.id)
+    // if range is null: deleteCursor
+    if (!cursor.range) {
+      const dispatchData = Object.assign({ collection }, { id: cursor.id });
+      actions.deleteCursor(dispatchData);
+      cursors.removeCursor(cursor.id);
+    } else {
+      // if this cursor id exists in this collection: updateCursor
+      const dispatchData = Object.assign(
+        { collection },
+        { id: cursor.id },
+        { range: cursor.range }
+      );
+      actions.updateCursor(dispatchData);
+
+    }
   }
 };
 
-const useSubscription = (doc, ref, cursors) => {
+const useSubscription = (
+  cursorState,
+  actions,
+  collection,
+  doc,
+  ref,
+  cursors
+) => {
   useEffect(() => {
     if (ref.current) {
       function onChangeReceived(type, change) {
+        console.log("RECEIVED CHANGE: ", type, change);
         switch (type) {
           case PRESENCE_CHANGE:
-            manageCursors(cursors, change);
+            manageCursors(cursorState, actions, collection, cursors, change);
             break;
           case DOCUMENT_CHANGE:
             ref.current.getEditor().updateContents(change);
@@ -65,7 +103,7 @@ const useSubscription = (doc, ref, cursors) => {
       doc.attach(onChangeReceived);
     }
     return () => doc.detach();
-  }, [ref, cursors, doc]);
+  }, [ref, cursors, doc, cursorState]);
 };
 
 const useCursorsModule = ref => {
@@ -78,22 +116,49 @@ const useCursorsModule = ref => {
   return cursors;
 };
 
-const TextArea = ({ roomInfo, updateRender }) => {
+const TextArea = ({
+  cursorState,
+  addCursor, deleteCursor, updateCursor,
+  collection,
+  roomInfo,
+  updateStore,
+  presenceId
+}) => {
   const quillRef = useRef(null);
-  const [doc, cursors] = useDocument(roomInfo.room, quillRef);
+  const [doc, cursors] = useDocument(
+    cursorState,
+    {addCursor, deleteCursor, updateCursor},
+    { collection, roomInfo, presenceId },
+    quillRef
+  );
+  useEffect(() => {
+    if (cursors && cursorState) {
+      cursors.clearCursors();
+      cursorState.forEach(cursor => {
+        cursors.createCursor(cursor.id, cursor.name, cursor.color);
+        cursors.moveCursor(cursor.id, cursor.range)
+      })
+    }
+  }, [cursorState]);
 
   const onChange = (content, delta, source, editor) => {
+    quillRef.current
+      .getEditor()
+      .formatLine(0, quillRef.current.getEditor().getLength(), {
+        "code-block": true
+      });
     if (source == "user") {
       doc.submitChange(delta);
     }
     const renderState = editor.getText();
-    updateRender({ render: renderState });
+    updateStore(renderState);
   };
   const onChangeSelection = (range, source, editor) => {
-    // console.log(range, typeof range);
-    if (range && range.index>=0) {
+    if (range && range.index >= 0) {
       range.name = roomInfo.name;
       doc.submitPresence(range);
+    } else if (!range && source == "user") {
+      doc.submitPresence(null);
     }
   };
 
@@ -127,8 +192,13 @@ TextArea.modules = {
   cursors: true
 };
 
-const mapDispatchToProps = {
-  updateRender: updateRender
+const mapDispatchToProps =  {
+  addCursor: addCursor,
+  updateCursor: updateCursor,
+  deleteCursor: deleteCursor
 };
+const mapStateToProps = (state, ownProps) => ({
+  cursorState: state.cursors.cursors[ownProps.collection]
+});
 
-export default connect(null, mapDispatchToProps)(TextArea);
+export default connect(mapStateToProps, mapDispatchToProps)(TextArea);

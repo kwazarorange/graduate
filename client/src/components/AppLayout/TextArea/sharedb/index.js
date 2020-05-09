@@ -10,12 +10,13 @@ const DOCUMENT_CHANGE = "document";
 
 
 class Document {
-  constructor(url, collection, documentId) {
+  constructor(url, collection, documentId, presenceId) {
     this.url = url;
     this.collection = collection;
     this.documentId = documentId;
     this.socket = this.createSocket();
     this.connection = new ShareDB.Connection(this.socket);
+    this.presenceId = presenceId
   }
   createSocket() {
     return new ReconnectingWebSocket("ws://" + this.url);
@@ -57,9 +58,14 @@ class Document {
       if (error) throw error;
     })
   }
+  destroyPresence() {
+    // console.log("Destroying local presence");
+    this.localPresence.destroy(error => {
+      if (error) throw error;
+    })
+  }
   subscribe() {
     this.document = this.fetchDocumentInstance();
-    this.presenceId = uuidv4();
     [this.presence, this.localPresence] = this.fetchPresence();
     this.observer = null;
 
