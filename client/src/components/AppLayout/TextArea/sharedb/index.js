@@ -59,7 +59,6 @@ class Document {
     })
   }
   destroyPresence() {
-    // console.log("Destroying local presence");
     this.localPresence.destroy(error => {
       if (error) throw error;
     })
