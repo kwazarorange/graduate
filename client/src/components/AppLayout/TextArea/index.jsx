@@ -11,114 +11,10 @@ import {
 import "react-quill/dist/quill.core.css";
 import "react-quill/dist/quill.bubble.css";
 import "./TextArea.scss";
+import "./Linter/LintBlot";
 import Document, { PRESENCE_CHANGE, DOCUMENT_CHANGE } from "./sharedb";
 
 Quill.register("modules/cursors", QuillCursors);
-
-const useDocument = (documentInfo, ref) => {
-  const doc = useMemo(
-    () =>
-      new Document(
-        "55.55.55.5:8080",
-        documentInfo.collection,
-        documentInfo.roomInfo.room,
-        documentInfo.presenceId
-      ),
-    []
-  );
-  // console.log(documentInfo);
-  useEffect(() => {
-    doc.subscribe();
-    // console.log(doc.document);
-    doc.submitPresence({id: documentInfo.presenceId, name: documentInfo.roomInfo.name});
-  }, []);
-
-  return doc;
-};
-
-const manageCursors = (cursorState, actions, collection, cursors, data) => {
-  const cursor = {
-    id: data.id,
-    name: data.range ? data.range.name : null,
-    range: data.range
-  };
-  const cursorsState = cursorState.filter(
-    cursor => cursor.collection == collection
-  );
-  // if this is a new cursor: addCursor
-  if (!cursorsState.find(curs => curs.id == cursor.id)) {
-    const dispatchData = Object.assign({ collection }, { cursor });
-    console.log(collection, cursor);
-    actions.addCursor(dispatchData);
-    return;
-  } else {
-    // if range is null: deleteCursor
-    if (!cursor.range) {
-      cursors.removeCursor(cursor.id);
-    } else {
-      // if this cursor id exists in this collection: updateCursor
-      const dispatchData = Object.assign(
-        { collection },
-        { id: cursor.id },
-        { range: cursor.range }
-      );
-      actions.updateCursor(dispatchData);
-    }
-  }
-};
-
-const useChangeNotifications = (cursorState, actions, doc, ref, cursors) => {
-  useEffect(() => {
-    if (ref.current) {
-      function onChangeReceived(type, change) {
-        console.log("RECEIVED CHANGE: ", type, change);
-        switch (type) {
-          case PRESENCE_CHANGE:
-            manageCursors(
-              cursorState,
-              actions,
-              doc.collection,
-              cursors,
-              change
-            );
-            break;
-          case DOCUMENT_CHANGE:
-            ref.current.getEditor().updateContents(change);
-            break;
-          default:
-            break;
-        }
-      }
-      doc.attach(onChangeReceived);
-    }
-    return () => doc.detach();
-  }, [ref, cursors, doc, cursorState]);
-};
-
-const useCursorsModule = (ref, collection, cursorState) => {
-  let [cursors, setCursors] = useState(null);
-  // retrieve cursors module
-  useEffect(() => {
-    if (ref.current) {
-      setCursors(ref.current.getEditor().getModule("cursors"));
-    }
-  }, [ref]);
-
-  // draw cursors from the redux state
-  useEffect(() => {
-    if (cursors && cursorState) {
-      const cursorsState = cursorState.filter(
-        cursor => cursor.collection == collection
-      );
-      cursors.clearCursors();
-      cursorsState.forEach(cursor => {
-        cursors.createCursor(cursor.id, cursor.name, cursor.color);
-        cursors.moveCursor(cursor.id, cursor.range);
-      });
-    }
-  }, [cursorState]);
-  return cursors;
-};
 
 const TextArea = ({
   cursorState,
@@ -148,23 +44,21 @@ const TextArea = ({
         "code-block": true
       });
     if (source == "user") {
+      console.log(quillRef.current.getEditor());
       doc.submitChange(delta);
     }
     const renderState = editor.getText();
     updateStore(renderState);
-
-
   };
   const onChangeSelection = (range, source, editor) => {
+    console.log(JSON.stringify(editor.getContents()));
     if (range && range.index >= 0) {
-      console.log(doc.presence.remotePresences);
       range.name = roomInfo.name;
       doc.submitPresence(range);
     } else if (!range && source == "user") {
       doc.submitPresence(null);
     }
   };
-
   return (
     <div className="textArea">
       <ReactQuill
@@ -194,6 +88,114 @@ TextArea.modules = {
   },
   cursors: true
 };
+
+function useDocument(documentInfo, ref) {
+  const doc = useMemo(
+    () =>
+      new Document(
+        "55.55.55.5:8080",
+        documentInfo.collection,
+        documentInfo.roomInfo.room,
+        documentInfo.presenceId
+      ),
+    []
+  );
+  // console.log(documentInfo);
+  useEffect(() => {
+    doc.subscribe();
+    // console.log(doc.document);
+    doc.submitPresence({
+      id: documentInfo.presenceId,
+      name: documentInfo.roomInfo.name
+    });
+  }, []);
+
+  return doc;
+}
+
+function manageCursors(cursorState, actions, collection, cursors, data) {
+  const cursor = {
+    id: data.id,
+    name: data.range ? data.range.name : null,
+    range: data.range
+  };
+  const cursorsState = cursorState.filter(
+    cursor => cursor.collection == collection
+  );
+  // if this is a new cursor: addCursor
+  if (!cursorsState.find(curs => curs.id == cursor.id)) {
+    const dispatchData = Object.assign({ collection }, { cursor });
+    console.log(collection, cursor);
+    actions.addCursor(dispatchData);
+    return;
+  } else {
+    // if range is null: deleteCursor
+    if (!cursor.range) {
+      cursors.removeCursor(cursor.id);
+    } else {
+      // if this cursor id exists in this collection: updateCursor
+      const dispatchData = Object.assign(
+        { collection },
+        { id: cursor.id },
+        { range: cursor.range }
+      );
+      actions.updateCursor(dispatchData);
+    }
+  }
+}
+
+function useChangeNotifications(cursorState, actions, doc, ref, cursors) {
+  useEffect(() => {
+    if (ref.current) {
+      function onChangeReceived(type, change) {
+        console.log("RECEIVED CHANGE: ", type, change);
+        switch (type) {
+          case PRESENCE_CHANGE:
+            manageCursors(
+              cursorState,
+              actions,
+              doc.collection,
+              cursors,
+              change
+            );
+            break;
+          case DOCUMENT_CHANGE:
+            ref.current.getEditor().updateContents(change);
+            break;
+          default:
+            break;
+        }
+      }
+      doc.attach(onChangeReceived);
+    }
+    return () => doc.detach();
+  }, [ref, cursors, doc, cursorState]);
+}
+
+function useCursorsModule(ref, collection, cursorState) {
+  let [cursors, setCursors] = useState(null);
+  // retrieve cursors module
+  useEffect(() => {
+    if (ref.current) {
+      setCursors(ref.current.getEditor().getModule("cursors"));
+    }
+  }, [ref]);
+
+  // draw cursors from the redux state
+  useEffect(() => {
+    if (cursors && cursorState) {
+      const cursorsState = cursorState.filter(
+        cursor => cursor.collection == collection
+      );
+      cursors.clearCursors();
+      cursorsState.forEach(cursor => {
+        cursors.createCursor(cursor.id, cursor.name, cursor.color);
+        cursors.moveCursor(cursor.id, cursor.range);
+      });
+    }
+  }, [cursorState]);
+  return cursors;
+}
 
 const mapDispatchToProps = {
   addCursor: addCursor,
