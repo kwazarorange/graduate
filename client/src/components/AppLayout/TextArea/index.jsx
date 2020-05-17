@@ -51,6 +51,13 @@ const TextArea = ({
     updateStore(renderState);
   };
   const onChangeSelection = (range, source, editor) => {
+    if (quillRef.current) {
+      const editor = quillRef.current.getEditor()
+      if (range && range.length > 5) {
+        editor.format('lint', 'test');
+        // editor.format('italic', 'true');
+      }
+    }
     console.log(JSON.stringify(editor.getContents()));
     if (range && range.index >= 0) {
       range.name = roomInfo.name;
