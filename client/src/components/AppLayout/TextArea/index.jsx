@@ -11,10 +11,11 @@ import {
 import "react-quill/dist/quill.core.css";
 import "react-quill/dist/quill.bubble.css";
 import "./TextArea.scss";
-import "./Linter/LintBlot";
+import Linter from "./Linter";
 import Document, { PRESENCE_CHANGE, DOCUMENT_CHANGE } from "./sharedb";
 
 Quill.register("modules/cursors", QuillCursors);
+Quill.register("modules/linter", Linter);
 
 const TextArea = ({
   cursorState,
@@ -43,7 +44,7 @@ const TextArea = ({
       .formatLine(0, quillRef.current.getEditor().getLength(), {
         "code-block": true
       });
-    if (source == "user") {
+    if (source === "user") {
       console.log(quillRef.current.getEditor());
       doc.submitChange(delta);
     }
@@ -51,18 +52,11 @@ const TextArea = ({
     updateStore(renderState);
   };
   const onChangeSelection = (range, source, editor) => {
-    if (quillRef.current) {
-      const editor = quillRef.current.getEditor()
-      if (range && range.length > 5) {
-        editor.format('lint', 'test');
-        // editor.format('italic', 'true');
-      }
-    }
     console.log(JSON.stringify(editor.getContents()));
     if (range && range.index >= 0) {
       range.name = roomInfo.name;
       doc.submitPresence(range);
-    } else if (!range && source == "user") {
+    } else if (!range && source === "user") {
       doc.submitPresence(null);
     }
   };
@@ -90,6 +84,7 @@ TextArea.modules = {
   clipboard: {
     matchVisual: false
   },
+  linter: true,
   history: {
     userOnly: true
   },
@@ -127,10 +122,10 @@ function manageCursors(cursorState, actions, collection, cursors, data) {
     range: data.range
   };
   const cursorsState = cursorState.filter(
-    cursor => cursor.collection == collection
+    cursor => cursor.collection === collection
   );
   // if this is a new cursor: addCursor
-  if (!cursorsState.find(curs => curs.id == cursor.id)) {
+  if (!cursorsState.find(curs => curs.id === cursor.id)) {
     const dispatchData = Object.assign({ collection }, { cursor });
     console.log(collection, cursor);
     actions.addCursor(dispatchData);
@@ -192,7 +187,7 @@ function useCursorsModule(ref, collection, cursorState) {
   useEffect(() => {
     if (cursors && cursorState) {
       const cursorsState = cursorState.filter(
-        cursor => cursor.collection == collection
+        cursor => cursor.collection === collection
       );
       cursors.clearCursors();
       cursorsState.forEach(cursor => {

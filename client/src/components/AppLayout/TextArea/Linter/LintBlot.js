@@ -25,4 +25,5 @@ class LintBlot extends Inline {
 LintBlot.blotName = "lint";
 LintBlot.tagName = "span";
 LintBlot.className = "lintClass";
-Quill.register("formats/lint", LintBlot);
+
+export default LintBlot;
