@@ -10,7 +10,6 @@ import {
 } from "../../../store/cursorsSlice";
 import "react-quill/dist/quill.core.css";
 import "react-quill/dist/quill.bubble.css";
-import "./TextArea.scss";
 import Linter from "./Linter";
 import Document, { PRESENCE_CHANGE, DOCUMENT_CHANGE } from "./sharedb";
 

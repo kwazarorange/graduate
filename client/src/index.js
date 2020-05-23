@@ -4,6 +4,7 @@ import { Provider } from "react-redux";
 import App from './App';
 import store from "./store";
 import * as serviceWorker from './serviceWorker';
+import './scss/main.scss';
 
 // codemirror.net - text editor
 // https://www.thatsoftwaredude.com/content/8912/create-a-basic-text-editor-in-javascript - how to build

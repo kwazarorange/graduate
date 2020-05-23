@@ -1,3 +1,5 @@
+@use 'colors';
+
 .textArea {
   margin: 0px;
   padding: 0;
@@ -5,32 +7,16 @@
   height: 100px;
 }
 .quill {
-  border: 2px solid #1c1d19;
-  background-color: #23241f;
+  border: 2px solid $editor_border_color;
+  background-color: $editor_background_color;
   height: 100%;
-
-  ::-webkit-scrollbar {
-    width: 10px;
-  }
-
-  /* Track */
-  ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  }
-
-  /* Handle */
-  ::-webkit-scrollbar-thumb {
-    background: #888;
-  }
-
-  /* Handle on hover */
-  ::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
+}
+.ql-editor {
+  @include scrollbar();
 }
 
 .lintClass {
-  text-decoration: underline dotted red;
+  text-decoration: underline dotted $lint_underline_color;
 }
 
 
@@ -40,15 +26,15 @@
 }
 [data-title]:after {
     content: attr(data-title);
-    background-color: #00FF00;
-    color: #111;
+    background-color: $lint_background_color;
+    color: $lint_text_color;
     position: absolute;
     padding: 1px 5px 2px 5px;
     bottom: -1.6em;
     left: 100%;
     white-space: nowrap;
     opacity: 0;
-    border: 1px solid #111111;
+    border: 1px solid $lint_border_color;
     z-index: 99999;
     visibility: hidden;
 }

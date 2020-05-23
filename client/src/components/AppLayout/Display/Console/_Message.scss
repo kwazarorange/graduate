@@ -6,19 +6,20 @@
   display: flex;
   justify-content: space-between;
   border-collapse: true;
+  overflow: hidden;
   border-left: 0;
   border-right: 0;
-  border-top: 1px solid #bbb;
-  border-bottom: 1px solid #bbb;
-  background-color: white;
-  color: #888;
+  border-top: 1px solid $message_border_color;
+  border-bottom: 1px solid $message_border_color;
+  background-color: $message_background_color;
+  color: $message_text_color;
   font-size: 1em;
 
 }
 .message.error {
-  background-color: #ffe6e6;
-  color: #ff6666;
-  border-color: #ffcccc;
+  background-color: $error_message_background_color;
+  color: $error_message_text_color;
+  border-color: $error_message_border_color;
 }
 
 .message-text {

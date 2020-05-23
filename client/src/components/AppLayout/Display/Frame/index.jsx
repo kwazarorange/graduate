@@ -1,8 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
 import {addMessage} from "../../../../store/consoleSlice";
-import "./Frame.scss";
-
 
 const Frame = ({ html, css, js, addMessage }) => {
   const document =

@@ -1,7 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
 import UserDisplay from "./UserDisplay";
-import "./UserListDisplay.scss";
 
 const UserListDisplay = ({ users }) => {
   const userList = users

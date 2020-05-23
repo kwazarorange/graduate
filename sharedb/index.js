@@ -7,6 +7,8 @@ ShareDB.types.register(richText.type);
 
 var backend = new ShareDB({ presence: true });
 
+
+
 function createDoc() {
   var connection = backend.connect();
   var doc = connection.get("examples", "richtext");
