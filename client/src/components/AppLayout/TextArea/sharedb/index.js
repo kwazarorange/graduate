@@ -10,10 +10,11 @@ const DOCUMENT_CHANGE = "document";
 
 
 class Document {
-  constructor(url, collection, documentId, presenceId) {
+  constructor(url, collection, documentId, presenceId, presenceName) {
     this.url = url;
     this.collection = collection;
     this.documentId = documentId;
+    this.presenceName = presenceName;
     this.socket = this.createSocket();
     this.connection = new ShareDB.Connection(this.socket);
     this.presenceId = presenceId
@@ -93,10 +94,11 @@ class Document {
     const onSubscribe = (error) => {
       if (error) throw error;
       console.log("Subscribed to document presence.");
+      this.submitPresence({name: this.presenceName, index: 0, length: 0});
     };
     this.presence.subscribe(onSubscribe);
     this.presence.on("receive", (id, range) => {
-      // console.log(this.presence);
+      console.log('RECEIVED');
       this.notify(PRESENCE_CHANGE, {id, range})
     })
   };

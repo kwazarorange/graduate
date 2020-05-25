@@ -97,18 +97,14 @@ function useDocument(documentInfo, ref) {
         "55.55.55.5:8080",
         documentInfo.collection,
         documentInfo.roomInfo.room,
-        documentInfo.presenceId
+        documentInfo.presenceId,
+        documentInfo.roomInfo.name
       ),
     []
   );
   // console.log(documentInfo);
   useEffect(() => {
     doc.subscribe();
-    // console.log(doc.document);
-    doc.submitPresence({
-      id: documentInfo.presenceId,
-      name: documentInfo.roomInfo.name
-    });
   }, []);
 
   return doc;
