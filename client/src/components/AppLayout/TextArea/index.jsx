@@ -3,6 +3,7 @@ import ReactQuill, { Quill } from "react-quill";
 import QuillCursors from "quill-cursors";
 import { connect } from "react-redux";
 import hljs from "./highlight.js";
+import EditorBar from "./EditorBar";
 import {
   addCursor,
   updateCursor,
@@ -24,7 +25,8 @@ const TextArea = ({
   collection,
   roomInfo,
   updateStore,
-  presenceId
+  presenceId,
+  linterState
 }) => {
   const quillRef = useRef(null);
   const doc = useDocument({ collection, roomInfo, presenceId }, quillRef);
@@ -61,6 +63,7 @@ const TextArea = ({
   };
   return (
     <div className="textArea">
+    <EditorBar editor_language = {collection} />
       <ReactQuill
         ref={quillRef}
         classname="quill"
@@ -200,7 +203,8 @@ const mapDispatchToProps = {
   deleteCursor: deleteCursor
 };
 const mapStateToProps = state => ({
-  cursorState: state.cursors.cursors
+  cursorState: state.cursors.cursors,
+  linterState: state.linter.js,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(TextArea);

@@ -26,7 +26,6 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 var server = app.listen(port);
-console.log(`Listening on port ${port}`)
 connectShareDBtoServer(server);
 
 module.exports = app;

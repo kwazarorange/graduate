@@ -1,0 +1,51 @@
+.editorBar {
+  background-color: $userlist_background_color;
+  border-bottom: 3px solid $editor_border_color;
+  display: flex;
+  padding: 5px 5px;
+  width: 100%;
+  height: 10%;
+
+
+  p {
+    color: $button_text_color;
+    font-size: 1em;
+    flex-grow: 1;
+    font-style: bold;
+    margin-left: 5px;
+  }
+  button {
+    display: flex;
+    align-items: center;
+    font-size: 0.8em;
+    padding: 2px 5px;
+    height: 100%;
+    margin-left: 5px;
+    background-color: $button_background_color;
+    border: 1px solid $button_border_color;
+    border-radius: 5px;
+    color: $button_text_color;
+  }
+  button:hover {
+    background-color: #39362E;
+  }
+}
+.option {
+  margin-right: 5px;
+  font-size: 0.7em;
+}
+.settingsPanel {
+  z-index: 9999999;
+  position: absolute;
+  width: 100%;
+  height: 30%;
+  padding: 10px;
+  background-color: $settings_background_color;
+  color: $settings_text_color;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+.checkboxLabel {
+  display: inline-block;
+  width: 100px;
+}

@@ -12,11 +12,10 @@
   }
   .userName {
     visibility: hidden;
-    background-color: red;
     padding: 0px 5px;
     // font-size: 0.5em;
     margin-left: 5px;
-    color: $user_text_color;
+    color: white;
     position: absolute;
     z-index: 999;
     // userLi height / 2

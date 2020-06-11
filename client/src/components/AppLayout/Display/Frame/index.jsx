@@ -1,21 +1,35 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import {addMessage} from "../../../../store/consoleSlice";
+import { addMessage } from "../../../../store/consoleSlice";
 
-const Frame = ({ html, css, js, addMessage }) => {
-  const document =
-    Frame.sendMessageScript +
-    "<style>" +
-    css +
-    "</style>" +
-    html +
-    "<script>" +
-    js +
-    "</script>";
+const Frame = ({ html, css, js, packages, externalCss, addMessage }) => {
+  const [document, setDocument] = useState("");
+  const packagesScriptList = packages.map(pckg => `<script crossorigin src='${pckg}'></script>`)
+  const cssExternalList = externalCss.map(css => `<link rel="stylesheet" type="text/css" href="${css}">`)
+  useEffect(() => {
+    let timer = null;
+    console.log(cssExternalList);
+    timer = setTimeout(() => {
+      const scriptType = (!!packagesScriptList.length) ? "<script type='text/babel'>" : '<script>';
+      setDocument(
+        packagesScriptList +
+        Frame.sendMessageScript +
+          "<style>" +
+          css +
+          "</style>" +
+          cssExternalList +
+          html +
+          scriptType +
+          js +
+          "</script>"
+      );
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [html, css, js]);
   const onMessageReceived = event => {
     if (event.data && event.data.source == "iframe") {
       console.log(event.data);
-      addMessage({message: event.data.message, type: event.data.type})
+      addMessage({ message: event.data.message, type: event.data.type });
     }
   };
   window.addEventListener("message", onMessageReceived, false);
@@ -55,11 +69,13 @@ Frame.sendMessageScript = `
 const mapStateToProps = state => ({
   html: state.render.render,
   css: state.render.css,
-  js: state.render.js
+  js: state.render.js,
+  packages: state.render.packages,
+  externalCss: state.render.externalCss
 });
 
 const mapDispatchToProps = {
   addMessage
-}
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(Frame);

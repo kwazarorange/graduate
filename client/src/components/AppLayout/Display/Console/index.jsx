@@ -15,7 +15,7 @@ const Console = ({ messageList }) => {
 const Message = ({ type, message }) => {
   return <li className={"message " + type}>
     <div className="message-text">{message.message}</div>
-    <div className="message-url">{message.url + ":" + message.line}</div>
+    <div className="message-url">{message.line}</div>
   </li>;
 };
 

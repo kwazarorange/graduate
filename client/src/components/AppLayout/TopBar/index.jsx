@@ -7,7 +7,6 @@ const TopBar = () => {
       <UserListDisplay />
       <button>save</button>
       <button>join</button>
-
     </div>
   );
 }

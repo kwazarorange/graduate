@@ -1,9 +1,8 @@
 import { Quill } from "react-quill";
 import LintBlot from "./LintBlot";
 import JSHINT from "jshint";
+import store from '../../../../store';
 const JSHint = JSHINT.JSHINT;
-console.log(JSHint);
-
 class Linter {
   static register() {
     Quill.register("formats/lint", LintBlot);
@@ -11,12 +10,14 @@ class Linter {
   constructor(quill, options) {
     this.quill = quill;
     this.options = options;
+    this.lintOptions = store.getState().linter.js;
     this.initTimer();
   }
   initTimer() {
     let timer = null;
-    this.quill.on(Quill.events.SCROLL_OPTIMIZE, () => {
+    this.quill.on('text-change', () => {
       clearTimeout(timer);
+      this.lintOptions = store.getState().linter.js;
       timer = setTimeout(() => {
         const text = this.quill.getText().split("\n");
         const errors = this.lint(text);
@@ -29,8 +30,9 @@ class Linter {
     });
   }
   lint(text) {
-    JSHint(text);
+    JSHint(text, this.lintOptions);
     if (JSHint.data().errors) {
+      console.log(JSHint.data().errors);
       const errors = this.processReport(JSHint.data(), text);
       return errors;
     } else {
@@ -45,7 +47,6 @@ class Linter {
       .map(length => (sumOfChars = (sumOfChars || 0) + length + 1));
     charsBeforeLineArray.pop();
     charsBeforeLineArray.unshift(0);
-    // console.log(charsBeforeLineArray);
     // calculate end of lint message
     function calcEnd(error, quill) {
       const separators = [";", " ", "\n"];
@@ -59,8 +60,6 @@ class Linter {
         return curIndex >= 0 ? (total < curIndex ? total : curIndex) : total;
       };
       const end = separators.reduce(reducer, substring.length ? substring.length : 1) + start;
-      // console.log(substring, start, '(', error.character, ')', end);
-      // console.log('error: ', error.reason, 'sub: ', substring, 'start|end: ', start, '/', end, 'text: ', quill.getText(start, end));
       return end;
     }
 
@@ -80,5 +79,6 @@ class Linter {
     });
   }
 }
+
 
 export default Linter;
