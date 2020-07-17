@@ -6,8 +6,6 @@ const logger = require('morgan');
 
 
 const port = process.env.PORT || 8080;
-const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
 const connectShareDBtoServer = require("./sharedb");
 
 const app = express();
@@ -21,9 +19,6 @@ app.use(cookieParser());
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, 'client/build')));
 };
-
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
 
 var server = app.listen(port);
 connectShareDBtoServer(server);

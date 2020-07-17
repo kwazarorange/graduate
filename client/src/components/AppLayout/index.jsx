@@ -1,6 +1,5 @@
 import React from 'react';
 import Display from './Display';
-import TextArea from './TextArea';
 import TextAreaGrid from "./TextAreaGrid";
 import TopBar from './TopBar';
 

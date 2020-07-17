@@ -8,7 +8,6 @@ const Frame = ({ html, css, js, packages, externalCss, addMessage }) => {
   const cssExternalList = externalCss.map(css => `<link rel="stylesheet" type="text/css" href="${css}">`)
   useEffect(() => {
     let timer = null;
-    console.log(cssExternalList);
     timer = setTimeout(() => {
       const scriptType = (!!packagesScriptList.length) ? "<script type='text/babel'>" : '<script>';
       setDocument(
@@ -28,7 +27,6 @@ const Frame = ({ html, css, js, packages, externalCss, addMessage }) => {
   }, [html, css, js]);
   const onMessageReceived = event => {
     if (event.data && event.data.source == "iframe") {
-      console.log(event.data);
       addMessage({ message: event.data.message, type: event.data.type });
     }
   };

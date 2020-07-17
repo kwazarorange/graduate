@@ -5,8 +5,6 @@ class LintBlot extends Inline {
   static create(value) {
     const node = super.create(value);
     node.setAttribute("data-title", value);
-    // node.setAttribute("href")
-    // node.setAttribute("target", "_blank")
     return node;
   }
   static formats(node) {

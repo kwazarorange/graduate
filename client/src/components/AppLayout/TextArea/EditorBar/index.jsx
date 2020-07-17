@@ -33,17 +33,17 @@ const EditorBar = ({
         {editor_language == "js" ? (
           <>
             <button onClick={() => updateShowSettings(!showSettings)}>
-              <i class="fas fa-sliders-h option"></i>
+              <i className="fas fa-sliders-h option"></i>
               Lint
             </button>
             <button onClick={() => updateShowPackages(!showPackages)}>
-              <i class="fas fa-cog option"></i>
+              <i className="fas fa-cog option"></i>
               Packages
             </button>
           </>
         ) : editor_language == "css" ? (
           <button onClick={() => updateShowCssExt(!showCssExt)}>
-            <i class="fas fa-cog option"></i>
+            <i className="fas fa-cog option"></i>
             CSS
           </button>
         ) : (

@@ -1,7 +1,6 @@
 import ReconnectingWebSocket from "reconnecting-websocket";
 import ShareDB from "sharedb/lib/client";
 import richText from "./rich-text";
-import { v4 as uuidv4 } from 'uuid';
 
 ShareDB.types.register(richText.type);
 
@@ -50,11 +49,9 @@ class Document {
     }
   }
   submitChange(delta) {
-    console.log("Submitting delta.");
     this.document.submitOp(delta, { source: "quill" });
   }
   submitPresence(range) {
-    console.log("Submitting presence: ", range)
     this.localPresence.submit(range, error => {
       if (error) throw error;
     })
@@ -74,13 +71,11 @@ class Document {
     };
     const onSubscribe = (error) => {
       if (error) throw error;
-      console.log("Subscribed to document instance.");
     };
     const onOperation = (op, source) => {
-      if (source == "quill") {
+      if (source === "quill") {
         return;
       } else {
-        console.log("Operation received from: " + source + ".");
         this.notify(DOCUMENT_CHANGE, op);
       }
     };
@@ -93,12 +88,10 @@ class Document {
   subscribeToPresence() {
     const onSubscribe = (error) => {
       if (error) throw error;
-      console.log("Subscribed to document presence.");
       this.submitPresence({name: this.presenceName, index: 0, length: 0});
     };
     this.presence.subscribe(onSubscribe);
     this.presence.on("receive", (id, range) => {
-      console.log('RECEIVED');
       this.notify(PRESENCE_CHANGE, {id, range})
     })
   };

@@ -3,7 +3,7 @@
   margin: 0;
   padding: 0;
   display: border-box;
-  background-color: $editor_background_color;
+  background-color: lighten($editor_background_color, 10%);
   border: 2px solid $editor_border_color;
   height: 15%;
   overflow-y: scroll;

@@ -7,7 +7,7 @@ import EditorBar from "./EditorBar";
 import {
   addCursor,
   updateCursor,
-  deleteCursor
+  deleteCursor,
 } from "../../../store/cursorsSlice";
 import "react-quill/dist/quill.core.css";
 import "react-quill/dist/quill.bubble.css";
@@ -26,7 +26,7 @@ const TextArea = ({
   roomInfo,
   updateStore,
   presenceId,
-  linterState
+  linterState,
 }) => {
   const quillRef = useRef(null);
   const doc = useDocument({ collection, roomInfo, presenceId }, quillRef);
@@ -43,17 +43,15 @@ const TextArea = ({
     quillRef.current
       .getEditor()
       .formatLine(0, quillRef.current.getEditor().getLength(), {
-        "code-block": true
+        "code-block": true,
       });
     if (source === "user") {
-      console.log(quillRef.current.getEditor());
       doc.submitChange(delta);
     }
     const renderState = editor.getText();
     updateStore(renderState);
   };
   const onChangeSelection = (range, source, editor) => {
-    console.log(JSON.stringify(editor.getContents()));
     if (range && range.index >= 0) {
       range.name = roomInfo.name;
       doc.submitPresence(range);
@@ -63,12 +61,12 @@ const TextArea = ({
   };
   return (
     <div className="textArea">
-    <EditorBar editor_language = {collection} />
+      <EditorBar editor_language={collection} />
       <ReactQuill
         ref={quillRef}
         classname="quill"
         defaultValue={{
-          ops: [{ attributes: { "code-block": true }, insert: "\n" }]
+          ops: [{ attributes: { "code-block": true }, insert: "\n" }],
         }}
         theme="bubble"
         onChange={onChange}
@@ -80,17 +78,17 @@ const TextArea = ({
 };
 TextArea.modules = {
   syntax: {
-    highlight: text => hljs.highlightAuto(text).value
+    highlight: (text) => hljs.highlightAuto(text).value,
   },
   toolbar: false,
   clipboard: {
-    matchVisual: false
+    matchVisual: false,
   },
   linter: true,
   history: {
-    userOnly: true
+    userOnly: true,
   },
-  cursors: true
+  cursors: true,
 };
 
 function useDocument(documentInfo, ref) {
@@ -105,7 +103,6 @@ function useDocument(documentInfo, ref) {
       ),
     []
   );
-  // console.log(documentInfo);
   useEffect(() => {
     doc.subscribe();
   }, []);
@@ -117,15 +114,14 @@ function manageCursors(cursorState, actions, collection, cursors, data) {
   const cursor = {
     id: data.id,
     name: data.range ? data.range.name : null,
-    range: data.range
+    range: data.range,
   };
   const cursorsState = cursorState.filter(
-    cursor => cursor.collection === collection
+    (cursor) => cursor.collection === collection
   );
   // if this is a new cursor: addCursor
-  if (!cursorsState.find(curs => curs.id === cursor.id)) {
+  if (!cursorsState.find((curs) => curs.id === cursor.id)) {
     const dispatchData = Object.assign({ collection }, { cursor });
-    console.log(collection, cursor);
     actions.addCursor(dispatchData);
     return;
   } else {
@@ -148,7 +144,6 @@ function useChangeNotifications(cursorState, actions, doc, ref, cursors) {
   useEffect(() => {
     if (ref.current) {
       function onChangeReceived(type, change) {
-        console.log("RECEIVED CHANGE: ", type, change);
         switch (type) {
           case PRESENCE_CHANGE:
             manageCursors(
@@ -185,10 +180,10 @@ function useCursorsModule(ref, collection, cursorState) {
   useEffect(() => {
     if (cursors && cursorState) {
       const cursorsState = cursorState.filter(
-        cursor => cursor.collection === collection
+        (cursor) => cursor.collection === collection
       );
       cursors.clearCursors();
-      cursorsState.forEach(cursor => {
+      cursorsState.forEach((cursor) => {
         cursors.createCursor(cursor.id, cursor.name, cursor.color);
         cursors.moveCursor(cursor.id, cursor.range);
       });
@@ -200,9 +195,9 @@ function useCursorsModule(ref, collection, cursorState) {
 const mapDispatchToProps = {
   addCursor: addCursor,
   updateCursor: updateCursor,
-  deleteCursor: deleteCursor
+  deleteCursor: deleteCursor,
 };
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   cursorState: state.cursors.cursors,
   linterState: state.linter.js,
 });
