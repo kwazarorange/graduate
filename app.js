@@ -10,6 +10,10 @@ const connectShareDBtoServer = require("./sharedb");
 
 const app = express();
 
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '/client/build/index.html'));
+});
+
 app.use(logger('dev'));
 
 app.use(bodyParser.json());
