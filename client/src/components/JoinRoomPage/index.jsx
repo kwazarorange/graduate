@@ -7,7 +7,7 @@ const JoinRoomPage = () => {
   const [room, setRoom] = useState("");
   const handleSubmit = e => {
     e.preventDefault();
-    navigate("/", {state: { name: name, room: room }, replace: true});
+    navigate("/app", {state: { name: name, room: room }, replace: true});
   }
   return (
     <div className="JoinRoomPage">

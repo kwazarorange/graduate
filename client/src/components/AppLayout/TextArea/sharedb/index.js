@@ -19,7 +19,7 @@ class Document {
     this.presenceId = presenceId
   }
   createSocket() {
-    return new ReconnectingWebSocket("ws://" + this.url);
+    return new ReconnectingWebSocket("wss://" + this.url);
   }
   fetchDocumentInstance() {
     const document = this.connection.get(this.collection, this.documentId);

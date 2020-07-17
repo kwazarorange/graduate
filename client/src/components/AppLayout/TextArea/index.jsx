@@ -95,7 +95,7 @@ function useDocument(documentInfo, ref) {
   const doc = useMemo(
     () =>
       new Document(
-        process.env.WS_URI,
+        "collab-code.herokuapp.com",
         documentInfo.collection,
         documentInfo.roomInfo.room,
         documentInfo.presenceId,

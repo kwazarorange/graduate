@@ -10,9 +10,7 @@ const connectShareDBtoServer = require("./sharedb");
 
 const app = express();
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '/client/build/index.html'));
-});
+
 
 app.use(logger('dev'));
 
@@ -21,7 +19,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'client/build')));
+  app.use(express.static(path.join(__dirname, '/client/build')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '/client/build/index.html'));
+  });
 };
 
 var server = app.listen(port);
