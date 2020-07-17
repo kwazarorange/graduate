@@ -6,7 +6,6 @@
     "client": "cd client && npm start",
     "server": "nodemon -V -L app.js",
     "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\"",
-    "build": "cd client && npm i && npm run build",
     "start": "node app.js"
   },
   "dependencies": {
