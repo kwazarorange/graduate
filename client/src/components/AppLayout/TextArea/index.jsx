@@ -59,6 +59,7 @@ const TextArea = ({
       doc.submitPresence(null);
     }
   };
+  const modules = {...TextArea.modules, linter: collection == 'js' ? true : false};
   return (
     <div className="textArea">
       <EditorBar editor_language={collection} />
