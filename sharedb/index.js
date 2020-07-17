@@ -5,7 +5,9 @@ var WebSocketJSONStream = require("@teamwork/websocket-json-stream");
 
 ShareDB.types.register(richText.type);
 
-const database = require('sharedb-mongo')('mongodb://127.0.0.1:27017/collabdb')
+const devDbUri = 'mongodb://127.0.0.1:27017/collabdb';
+const mongoDbUri = process.env.MONGODB_URI || devDbUri;
+const database = require('sharedb-mongo')(mongoDbUri)
 var backend = new ShareDB({ db: database ,presence: true });
 
 

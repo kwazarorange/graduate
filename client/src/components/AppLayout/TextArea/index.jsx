@@ -95,7 +95,7 @@ function useDocument(documentInfo, ref) {
   const doc = useMemo(
     () =>
       new Document(
-        "55.55.55.5:8080",
+        process.env.WS_URI,
         documentInfo.collection,
         documentInfo.roomInfo.room,
         documentInfo.presenceId,
