@@ -10,6 +10,7 @@ npm install
 cd client && npm install
 ```
 Set up a MongoDB server and initialize MONGODB_URI configuration variable.
+
 Run the project:
 ```
 npm run dev
